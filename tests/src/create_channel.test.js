@@ -19,14 +19,14 @@ const [s, sp, x] = nano_models;
 // [x].forEach(function(model) {
 //   test('[Nano ' + model.letter + '] Create Channel With Fees', zemu(model, async (sim, eth) => {
 
-//   const serializedTx = txFromEtherscan("0x5148982600000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000002b5e3af16b1880000000000000000000000000000000000000000000000000000000000000000003d312b6261666b726569667878717035706c35733775337733626a617332613273716c357665736532793369716f636732756d346f746b32696d626f6461");
+//   const serializedTx = txFromEtherscan("0x5148982600000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000002b5e3af16b1880000000000000000000000000000000000000000000000000000000000000000003d312b6261666b726569667878717035706c35733775337733626a617332613273716c357665736532793369716f636732756d346f746b32696d626f6461000000");
 
 //   const tx = eth.signTransaction(
 //     "44'/60'/0'/0",
 //     serializedTx,
 //   );
 
-//   const right_clicks = model.letter === 'S' ? 6 : 4;
+//   const right_clicks = 4;
 
 //   // Wait for the application to actually load and parse the transaction
 //   await waitForAppScreen(sim);
@@ -53,6 +53,7 @@ const [s, sp, x] = nano_models;
   const channelCreationFees = 50; // 50 DAI
   const feesAmount = ethers.utils.parseUnits(channelCreationFees.toString(), 18);
 
+  // https://etherscan.io/tx/0x66d378b151374c97800434eea221d26bf9df2de1a2e75997f56dbe4bb10993a0
   const {data} = await contract.populateTransaction.createChannelWithFees(
     channelType,
     identityBytes,
@@ -65,11 +66,6 @@ const [s, sp, x] = nano_models;
   unsignedTx.to = EPNSCoreContractAddr;
   // Modify the attached data
   unsignedTx.data = data;
-  // EDIT THIS: get rid of this if you don't wish to modify the `value` field.
-  // Modify the number of ETH sent
-  // unsignedTx.value = parseEther("0.1");
-
-  console.log('data: ====> ', data);
 
   // Create serializedTx and remove the "0x" prefix
   const serializedTx = ethers.utils.serializeTransaction(unsignedTx).slice(2);
@@ -83,10 +79,7 @@ const [s, sp, x] = nano_models;
 
   // Wait for the application to actually load and parse the transaction
   await waitForAppScreen(sim);
-  // Navigate the display by pressing the right button 10 times, then pressing both buttons to accept the transaction.
-  // EDIT THIS: modify `10` to fix the number of screens you are expecting to navigate through.
   await sim.navigateAndCompareSnapshots('.', model.name + '_create_channel_with_fees', [right_clicks, 0]);
-
   await tx;
   }));
 });
