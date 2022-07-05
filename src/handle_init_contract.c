@@ -36,7 +36,7 @@ void handle_init_contract(void *parameters) {
     memset(context, 0, sizeof(*context));
 
     uint32_t selector = U4BE(msg->selector, 0);
-    if (find_selector(selector, BOILERPLATE_SELECTORS, NUM_SELECTORS, &context->selectorIndex)) {
+    if (find_selector(selector, EPNS_SELECTORS, NUM_SELECTORS, &context->selectorIndex)) {
         msg->result = ETH_PLUGIN_RESULT_UNAVAILABLE;
         return;
     }
@@ -45,12 +45,27 @@ void handle_init_contract(void *parameters) {
     // EDIT THIS: Adapt the `cases`, and set the `next_param` to be the first parameter you expect
     // to parse.
     switch (context->selectorIndex) {
-        case SWAP_EXACT_ETH_FOR_TOKENS:
-            context->next_param = MIN_AMOUNT_RECEIVED;
+        case EPNS_ADD_DELEGATE:
+        case EPNS_REMOVE_DELEGATE:
+            context->next_param = DELEGATEE;
             break;
-        case BOILERPLATE_DUMMY_2:
-            context->next_param = TOKEN_RECEIVED;
+
+        case EPNS_REACTIVATE_CHANNEL:
+            context->next_param = CHANNEL_FEES_AMOUNT;
             break;
+
+        case EPNS_DEACTIVATE_CHANNEL:
+            context->next_param = TOKENS_RECEIVED;
+            break;
+
+        case EPNS_CREATE_CHANNEL:
+            context->next_param = CHANNEL_TYPE;
+            break;
+
+        case EPNS_DAI_APPROVE:
+            context->next_param = BENEFICIARY;
+            break;
+
         // Keep this
         default:
             PRINTF("Missing selectorIndex: %d\n", context->selectorIndex);

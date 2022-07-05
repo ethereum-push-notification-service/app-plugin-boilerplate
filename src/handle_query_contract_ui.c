@@ -1,63 +1,166 @@
 #include "boilerplate_plugin.h"
 
-// EDIT THIS: You need to adapt / remove the static functions (set_send_ui, set_receive_ui ...) to
-// match what you wish to display.
-
-// Set UI for the "Send" screen.
-// EDIT THIS: Adapt / remove this function to your needs.
-static void set_send_ui(ethQueryContractUI_t *msg) {
-    strlcpy(msg->title, "Send", msg->titleLength);
-
-    const uint8_t *eth_amount = msg->pluginSharedRO->txContent->value.value;
-    uint8_t eth_amount_size = msg->pluginSharedRO->txContent->value.length;
-
-    // Converts the uint256 number located in `eth_amount` to its string representation and
-    // copies this to `msg->msg`.
-    amountToString(eth_amount, eth_amount_size, WEI_TO_ETHER, "ETH ", msg->msg, msg->msgLength);
+void copy_amount_with_ticker(const uint8_t *amount,
+                             uint8_t amount_size,
+                             uint8_t amount_decimals,
+                             char *ticker,
+                             uint8_t ticker_size,
+                             char *out_buffer,
+                             uint8_t out_buffer_size) {
+    char tmp_buffer[100] = {0};
+    amountToString(amount, amount_size, amount_decimals, "", tmp_buffer, 100);
+    uint8_t stringLen = strnlen(tmp_buffer, sizeof(tmp_buffer)) + 1 + ticker_size;
+    snprintf(out_buffer, MIN(out_buffer_size, stringLen), "%s %s", tmp_buffer, ticker);
+    out_buffer[out_buffer_size - 1] = '\0';
 }
 
-// Set UI for "Receive" screen.
-// EDIT THIS: Adapt / remove this function to your needs.
-static void set_receive_ui(ethQueryContractUI_t *msg, const context_t *context) {
-    strlcpy(msg->title, "Receive Min.", msg->titleLength);
+static void copy_amount(uint8_t *dst, size_t dst_len, uint8_t *src) {
+    size_t len = MIN(dst_len, PARAMETER_LENGTH);
+    memcpy(dst, src, len);
+}
 
-    uint8_t decimals = context->decimals;
-    const char *ticker = context->ticker;
 
-    // If the token look up failed, use the default network ticker along with the default decimals.
-    if (!context->token_found) {
-        decimals = WEI_TO_ETHER;
-        ticker = msg->network_ticker;
+static void set_add_delegate_ui(ethQueryContractUI_t *msg, context_t *context) {
+    switch (msg->screenIndex) {
+        case 0:
+            strlcpy(msg->title, "Delegate Address", msg->titleLength);
+            
+            // Prefix the address with `0x`.
+            msg->msg[0] = '0';
+            msg->msg[1] = 'x';
+
+            // We need a random chainID for legacy reasons with `getEthAddressStringFromBinary`.
+            // Setting it to `0` will make it work with every chainID :)
+            uint64_t chainid = 0;
+
+
+            // Get the string representation of the address stored in `context->beneficiary`. Put it in
+            // `msg->msg`.
+            getEthAddressStringFromBinary(
+                context->delegatee,
+                msg->msg + 2,  // +2 here because we've already prefixed with '0x'.
+                msg->pluginSharedRW->sha3,
+                chainid
+            );
+            break;
     }
-
-    amountToString(context->amount_received,
-                   sizeof(context->amount_received),
-                   decimals,
-                   ticker,
-                   msg->msg,
-                   msg->msgLength);
 }
 
-// Set UI for "Beneficiary" screen.
-// EDIT THIS: Adapt / remove this function to your needs.
-static void set_beneficiary_ui(ethQueryContractUI_t *msg, context_t *context) {
-    strlcpy(msg->title, "Beneficiary", msg->titleLength);
+static void set_remove_delegate_ui(ethQueryContractUI_t *msg, context_t *context) {
+    switch (msg->screenIndex) {
+        case 0:
+            strlcpy(msg->title, "Delegate Address", msg->titleLength);
+            
+            // Prefix the address with `0x`.
+            msg->msg[0] = '0';
+            msg->msg[1] = 'x';
 
-    // Prefix the address with `0x`.
-    msg->msg[0] = '0';
-    msg->msg[1] = 'x';
+            // We need a random chainID for legacy reasons with `getEthAddressStringFromBinary`.
+            // Setting it to `0` will make it work with every chainID :)
+            uint64_t chainid = 0;
 
-    // We need a random chainID for legacy reasons with `getEthAddressStringFromBinary`.
-    // Setting it to `0` will make it work with every chainID :)
-    uint64_t chainid = 0;
 
-    // Get the string representation of the address stored in `context->beneficiary`. Put it in
-    // `msg->msg`.
-    getEthAddressStringFromBinary(
-        context->beneficiary,
-        msg->msg + 2,  // +2 here because we've already prefixed with '0x'.
-        msg->pluginSharedRW->sha3,
-        chainid);
+            // Get the string representation of the address stored in `context->beneficiary`. Put it in
+            // `msg->msg`.
+            getEthAddressStringFromBinary(
+                context->delegatee,
+                msg->msg + 2,  // +2 here because we've already prefixed with '0x'.
+                msg->pluginSharedRW->sha3,
+                chainid
+            );
+            break;
+    }
+}
+
+static void set_reactivate_channel_ui(ethQueryContractUI_t *msg, context_t *context) {
+    switch (msg->screenIndex) {
+        case 0:
+            strlcpy(msg->title, "ReActivate fee", msg->titleLength);
+            
+            copy_amount_with_ticker(context->channel_fees_amount,
+                sizeof(context->channel_fees_amount),
+                WEI_TO_ETHER,
+                "DAI",
+                sizeof("DAI"),
+                msg->msg,
+                msg->msgLength);
+
+            break;
+    }
+}
+
+static void set_deactivate_channel_ui(ethQueryContractUI_t *msg, context_t *context) {
+    switch (msg->screenIndex) {
+        case 0:
+            strlcpy(msg->title, "Tokens Received", msg->titleLength);
+
+            copy_amount_with_ticker(context->tokens,
+                sizeof(context->tokens),
+                WEI_TO_ETHER,
+                "PUSH",
+                sizeof("PUSH"),
+                msg->msg,
+                msg->msgLength);
+
+            break;
+    }
+}
+
+
+static void set_create_channel_ui(ethQueryContractUI_t *msg, context_t *context) {
+    switch (msg->screenIndex) {
+        case 0:
+            strlcpy(msg->title, "New Channel fee", msg->titleLength);
+
+            copy_amount_with_ticker(context->channel_fees_amount,
+                sizeof(context->channel_fees_amount),
+                WEI_TO_ETHER,
+                "DAI",
+                sizeof("DAI"),
+                msg->msg,
+                msg->msgLength);
+
+            break;
+    }
+}
+
+static void set_approve_dai_ui(ethQueryContractUI_t *msg, context_t *context) {
+    switch (msg->screenIndex) {
+        case 0:
+            strlcpy(msg->title, "Beneficiary", msg->titleLength);
+            
+            // Prefix the address with `0x`.
+            msg->msg[0] = '0';
+            msg->msg[1] = 'x';
+
+            // We need a random chainID for legacy reasons with `getEthAddressStringFromBinary`.
+            // Setting it to `0` will make it work with every chainID :)
+            uint64_t chainid = 0;
+
+
+            // Get the string representation of the address stored in `context->beneficiary`. Put it in
+            // `msg->msg`.
+            getEthAddressStringFromBinary(
+                context->beneficiary,
+                msg->msg + 2,  // +2 here because we've already prefixed with '0x'.
+                msg->pluginSharedRW->sha3,
+                chainid
+            );
+            break;
+
+        case 1:
+            strlcpy(msg->title, "Approve Access", msg->titleLength);
+            
+            copy_amount_with_ticker(context->channel_fees_amount,
+                sizeof(context->channel_fees_amount),
+                WEI_TO_ETHER,
+                "DAI",
+                sizeof("DAI"),
+                msg->msg,
+                msg->msgLength);
+
+            break;
+    }
 }
 
 void handle_query_contract_ui(void *parameters) {
@@ -73,20 +176,33 @@ void handle_query_contract_ui(void *parameters) {
 
     msg->result = ETH_PLUGIN_RESULT_OK;
 
-    // EDIT THIS: Adapt the cases for the screens you'd like to display.
-    switch (msg->screenIndex) {
-        case 0:
-            set_send_ui(msg);
+    switch (context->selectorIndex) {
+        case EPNS_ADD_DELEGATE:
+            set_add_delegate_ui(msg, context);
             break;
-        case 1:
-            set_receive_ui(msg, context);
+
+        case EPNS_REMOVE_DELEGATE:
+            set_remove_delegate_ui(msg, context);
             break;
-        case 2:
-            set_beneficiary_ui(msg, context);
+        
+        case EPNS_REACTIVATE_CHANNEL:
+            set_reactivate_channel_ui(msg, context);
             break;
-        // Keep this
+
+        case EPNS_DEACTIVATE_CHANNEL:
+            set_deactivate_channel_ui(msg, context);
+            break;
+        
+        case EPNS_CREATE_CHANNEL:
+            set_create_channel_ui(msg, context);
+            break;
+        
+        case EPNS_DAI_APPROVE:
+            set_approve_dai_ui(msg, context);
+            break;
+        
         default:
-            PRINTF("Received an invalid screenIndex\n");
+            PRINTF("Received an invalid selectorIndex\n");
             msg->result = ETH_PLUGIN_RESULT_ERROR;
             return;
     }

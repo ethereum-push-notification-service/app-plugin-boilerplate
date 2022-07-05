@@ -1,0 +1,54 @@
+{
+    "chainId": 1,
+    "contracts": [
+        {
+            "address": "0xb3971bcef2d791bc4027bbfedfb47319a4aaaaaa",
+            "contractName": "EPNSComm",
+            "selectors": {
+                "0xe71bdf41": {
+                    "erc20OfInterest": [],
+                    "method": "addDelegate",
+                    "plugin": "EPNS"
+		        },
+                "0x67e7646f": {
+                    "erc20OfInterest": [],
+                    "method": "removeDelegate",
+                    "plugin": "EPNS"
+		        }
+	        }
+	    },
+        {
+            "address": "0x66329fdd4042928bfcab60b179e1538d56eeeeee",
+            "contractName": "EPNSCore",
+            "selectors": {
+                "0x2f00dfe0": {
+                    "erc20OfInterest": [],
+                    "method": "reactivateChannel",
+                    "plugin": "EPNS"
+		        },
+                "0x9f41ede8": {
+                    "erc20OfInterest": [],
+                    "method": "deactivateChannel",
+                    "plugin": "EPNS"
+		        },
+                "0x51489826": {
+                    "erc20OfInterest": [],
+                    "method": "createChannelWithFees",
+                    "plugin": "EPNS"
+		        }
+	        }
+	    },
+        {
+            "address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+            "contractName": "DAIContract",
+            "selectors": {
+                "0x095ea7b3": {
+                    "erc20OfInterest": [],
+                    "method": "approve",
+                    "plugin": "EPNS"
+		        }
+	        }
+	    }
+    ],
+    "name": "EPNS"
+}

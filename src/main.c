@@ -26,15 +26,27 @@
 
 // List of selectors supported by this plugin.
 // EDIT THIS: Adapt the variable names and change the `0x` values to match your selectors.
-static const uint32_t SWAP_EXACT_ETH_FOR_TOKENS_SELECTOR = 0x7ff36ab5;
-static const uint32_t BOILERPLATE_DUMMY_SELECTOR_2 = 0x13374242;
+// static const uint32_t SWAP_EXACT_ETH_FOR_TOKENS_SELECTOR = 0x7ff36ab5;
+// static const uint32_t BOILERPLATE_DUMMY_SELECTOR_2 = 0x13374242;
+
+// EPNS changes
+static const uint32_t EPNS_ADD_DELEGATE_SELECTOR = 0xe71bdf41;
+static const uint32_t EPNS_REMOVE_DELEGATE_SELECTOR = 0x67e7646f;
+static const uint32_t EPNS_REACTIVATE_CHANNEL_SELECTOR = 0x2f00dfe0;
+static const uint32_t EPNS_DEACTIVATE_CHANNEL_SELECTOR = 0x9f41ede8;
+static const uint32_t EPNS_CREATE_CHANNEL_SELECTOR = 0x51489826;
+static const uint32_t EPNS_DAI_APPROVE_SELECTOR = 0x095ea7b3;
 
 // Array of all the different boilerplate selectors. Make sure this follows the same order as the
 // enum defined in `boilerplate_plugin.h`
 // EDIT THIS: Use the names of the array declared above.
-const uint32_t BOILERPLATE_SELECTORS[NUM_SELECTORS] = {
-    SWAP_EXACT_ETH_FOR_TOKENS_SELECTOR,
-    BOILERPLATE_DUMMY_SELECTOR_2,
+const uint32_t EPNS_SELECTORS[NUM_SELECTORS] = {
+    EPNS_ADD_DELEGATE_SELECTOR,
+    EPNS_REMOVE_DELEGATE_SELECTOR,
+    EPNS_REACTIVATE_CHANNEL_SELECTOR,
+    EPNS_DEACTIVATE_CHANNEL_SELECTOR,
+    EPNS_CREATE_CHANNEL_SELECTOR,
+    EPNS_DAI_APPROVE_SELECTOR
 };
 
 // Function to dispatch calls from the ethereum app.
