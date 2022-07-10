@@ -70,6 +70,8 @@ const [s, sp, x] = nano_models;
   // Create serializedTx and remove the "0x" prefix
   const serializedTx = ethers.utils.serializeTransaction(unsignedTx).slice(2);
 
+  console.log('------------->> TXN is about to be signed');
+
   const tx = eth.signTransaction(
     "44'/60'/0'/0",
     serializedTx
@@ -77,9 +79,14 @@ const [s, sp, x] = nano_models;
 
   const right_clicks = 4;
 
+  console.log('------------->> BEFORE waitForAppScreen');
+
   // Wait for the application to actually load and parse the transaction
   await waitForAppScreen(sim);
+
+  console.log('------------->> AFTER waitForAppScreen');
   await sim.navigateAndCompareSnapshots('.', model.name + '_create_channel_with_fees', [right_clicks, 0]);
+  console.log('------------->> after navigateAndCompareSnapshots');
   await tx;
   }));
 });

@@ -14,12 +14,6 @@ void copy_amount_with_ticker(const uint8_t *amount,
     out_buffer[out_buffer_size - 1] = '\0';
 }
 
-static void copy_amount(uint8_t *dst, size_t dst_len, uint8_t *src) {
-    size_t len = MIN(dst_len, PARAMETER_LENGTH);
-    memcpy(dst, src, len);
-}
-
-
 static void set_add_delegate_ui(ethQueryContractUI_t *msg, context_t *context) {
     switch (msg->screenIndex) {
         case 0:
@@ -110,8 +104,8 @@ static void set_deactivate_channel_ui(ethQueryContractUI_t *msg, context_t *cont
 static void set_create_channel_ui(ethQueryContractUI_t *msg, context_t *context) {
     switch (msg->screenIndex) {
         case 0:
-            strlcpy(msg->title, "New Channel fee", msg->titleLength);
-
+            strlcpy(msg->title, "Create Channel fee", msg->titleLength);
+        
             copy_amount_with_ticker(context->channel_fees_amount,
                 sizeof(context->channel_fees_amount),
                 WEI_TO_ETHER,
